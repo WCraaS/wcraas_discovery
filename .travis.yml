@@ -1,0 +1,17 @@
+language: python
+python:
+- 3.7
+- 3.6
+install: pip install -U tox-travis
+script: tox
+deploy:
+  provider: pypi
+  twine_version: 1.15.0
+  distributions: sdist bdist_wheel
+  user: panagiks
+  password:
+    secure: AvdT1rSBHbuFwdElUdTWTM4Xp0bB8zl+qzBPFMTEHRT/xxMRpBavicM803kJJ5besiNezsAY9x6uE1YCefddQ2CEa4vuAH0iP1L+5aFe8iyMCYUn8Uwe+9TtIq6DiIQaFqXvV1jSPD6C1fFWtuWbbhlL5kK5Y02NbsjsGXT0adAJHZoYELDmS+d04XdQ1jHarvb3JYQIhqHa5FCQNerC+GqcbKp8b+L8yEifQe4xGeDbJ70LSBg6tSGx3efPPYkV27JJ9LBj/SvF2jZWFTnKHWQh0EIJ4qliukaXCgILPwulj8ZCCLXtzhMpuAW0zCG8VQKPcBoziipyKjBl8jJw19H6Ay/EsSxrvSHjLGldKKbMPOC93EYnQxYhhmlgi+XfYcgLl4EliqhWKCfrCR0wCmavBFn3yEvyibNf6AEM9b122/WjfKDpwheEBNvvpvBC/WkTaaTvN4reKHH/IHL05kEr7n0jIYrXQsVnZ2/KRxvdFx/4xntrcGGjL1+mf7ddCt4RMlWtEEvYektJMp1ltaUyPdickV9al+3gS2s6rlj9fHmDoYAyWNg7KMu8dl+W7WHx2daL5kdHTmhZIkPABlAEt6UqQ27mzcxHdXiQUH/VyL4abZV9AXOz5WKk6EjcOxKIiGzryM7bDiNtVaCwPGDNT/6bCCQjXrPisxXVQ5k=
+  on:
+    tags: true
+    repo: WCraaS/wcraas_discovery
+    python: 3.6
