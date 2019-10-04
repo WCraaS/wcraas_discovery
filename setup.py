@@ -13,6 +13,7 @@ with open('HISTORY.rst') as history_file:
 
 requirements = [
     'aio-pika',
+    'aiohttp',
     'bs4',
     'Click>=7.0',
     'environs',

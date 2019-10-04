@@ -12,6 +12,7 @@ Click==7.0
 pytest==4.6.5
 pytest-runner==5.1
 aio-pika
+aiohttp
 bs4
 environs
 wcraas-common

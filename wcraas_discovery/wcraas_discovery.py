@@ -3,10 +3,10 @@
 """The WCraaS Discovery module is responsible for providing discovery services for the platform."""
 
 import asyncio
-import urllib.request
 import json
 import logging
 import aio_pika
+import aiohttp
 
 from aio_pika import connect_robust, Message, DeliveryMode, ExchangeType
 from aio_pika.patterns import RPC
@@ -41,8 +41,10 @@ class DiscoveryWorker(WcraasWorker):
         """
         self.logger.info(f"Received: {url}")
 
-        with urllib.request.urlopen(url) as resp:
-            html_body = resp.read().decode("utf-8")
+        async with self.http_session.get(url, ssl=False) as resp:
+            if resp.status >= 400:
+                self.logger.warn(f"Got error code {resp.status} for {url}")
+            html_body = await resp.text()
 
         async with self._amqp_pool.acquire() as raw_channel:
             raw_exchange = await raw_channel.declare_exchange(
@@ -63,9 +65,11 @@ class DiscoveryWorker(WcraasWorker):
         Asynchronous runtime for the worker, responsible of managing and maintaining async context open.
         """
         async with self._amqp_pool.acquire() as rpc_channel:
-            rpc = await RPC.create(rpc_channel)
-            await rpc.register("discover", self.discover, auto_delete=True)
-            await self._close.wait()
+            async with aiohttp.ClientSession() as http_session:
+                self.http_session = http_session
+                rpc = await RPC.create(rpc_channel)
+                await rpc.register("discover", self.discover, auto_delete=True)
+                await self._close.wait()
 
     def run(self) -> None:
         """
