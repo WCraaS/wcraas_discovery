@@ -16,6 +16,7 @@ from typing import Dict, List
 from yarl import URL
 
 from wcraas_common import AMQPConfig, WcraasWorker
+from wcraas_common.decorator import is_rpc
 
 
 class DiscoveryWorker(WcraasWorker):
@@ -32,6 +33,7 @@ class DiscoveryWorker(WcraasWorker):
         self.logger.setLevel(loglevel)
         self._close = asyncio.Event()
 
+    @is_rpc("discover")
     async def discover(self, url: str) -> Dict[str, Dict[str, List[str]]]:
         """
         Faktory entrypoint for the discovery process.
@@ -64,25 +66,9 @@ class DiscoveryWorker(WcraasWorker):
         """
         Asynchronous runtime for the worker, responsible of managing and maintaining async context open.
         """
-        async with self._amqp_pool.acquire() as rpc_channel:
-            async with aiohttp.ClientSession() as http_session:
-                self.http_session = http_session
-                rpc = await RPC.create(rpc_channel)
-                await rpc.register("discover", self.discover, auto_delete=True)
-                await self._close.wait()
-
-    def run(self) -> None:
-        """
-        Helper function implementing the synchronous boilerplate for initilization and reardown.
-        """
-        loop = asyncio.get_event_loop()
-        try:
-            loop.run_until_complete(self.start())
-        except KeyboardInterrupt:
-            self.logger.info("[x] Received ^C ! Exiting ...")
-        finally:
-            self._close.set()
-            loop.shutdown_asyncgens()
+        async with aiohttp.ClientSession() as http_session:
+            self.http_session = http_session
+            await self.start_rpc()
 
     @staticmethod
     def extract(html_body: str, origin_url: str) -> Dict[str, List[str]]:
